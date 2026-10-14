@@ -1,0 +1,7 @@
+.Xil/
+*.jou
+*.log
+*.str
+*.txt
+/build/
+/cong/

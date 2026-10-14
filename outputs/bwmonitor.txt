@@ -1,0 +1,133 @@
+$ bwmonitor --help
+Usage: bwmonitor <options>
+Where <options> are:
+--device=<DEVICE>[,DEVICE[,...]] : connect using HIL device entry number(s).
+--port=<COMPORT>                 : connect over serial port.
+--baud=<BAUD>                    : serial port rate. Defaults to 9600.
+--type=<TYPE>                    : one of FMC, Sensor, SFP, DIMM, BMC, Clock, Fpga,
+Power, Network. Defaults to listing/reading all.
+--file=<FILENAME>                : src/dest file for reading/writing. Defaults to
+STDIN/STDOUT.
+--dev=<DEVICE>[,DEVICE[,...]]    : alias for --device=
+--uart0=<VALUE>                  : first UART mux register value
+--uart1=<VALUE>                  : second UART mux register value
+--flags[=<VALUE>]                : BMC Flags value for --type=BMC
+--flags1[=<VALUE>]               : BMC Flags1 value for --type=BMC
+--i2c_own[=<VALUE>]              : I2C ownership override value for --read or --write
+--type=BMC and --value where 1 indicates
+BMC ownership.
+--last_error                     : BMC last error for --read --type=BMC
+--logfile=<PATH>                 : Path to log file.
+--logfileflags=<append>          : Add mode to append. Default mode is overwrite.
+--logformat=<simplified>         : Use simplified output. Default format is plain.
+--verbose                        : be more verbose. Shows sensor thresholds when
+reading sensors.
+Operations: where <ID> is the FRU index, SDR index, or id.
+--help[=examples]                : Show help or examples
+--list                           : list components of type <TYPE>
+--read[=<ID>]                    : read component <ID> of type <TYPE>
+--write[=<ID>]                   : write to component <ID> of type <TYPE>.
+<FILENAME> used for FRU read/write*,
+microcontroller upgrade, clock program.
+--i2cread                        : read I2c device
+--devaddr=<DEV>                    I2C device address
+--addr=<ADDR>                      8-bit PROM address
+--count=<COUNT>                    number of bytes to read
+--i2cwrite                       : write to an I2c device
+--devaddr=<DEV>                    I2C device address
+--addr=<ADDR>                      8-bit PROM address
+--strval=<STRVAL>                  Use strval to write a string. Use \n as separator
+--hexval=<HEXVAL,...,HEXVAL>       Use hexval to write hex values
+--loop[=<N>]                     : loop read operation until N seconds have passed.
+Defaults to forever.
+--read_every=<F>                   used with loop; perform read operation every F seconds
+--power=<P>                      : 0 to remove board power or 1 to apply power
+--shell                          : open raw IPMI command shell
+--clear-cache                    : clear SDR and peripheral table caches.
+--version                        : report program and firmware versions.
+
+$ bwmonitor --help=examples
+Examples:
+Read all sensors on device 0
+bwmonitor --read --type=Sensor
+
+Read all sensors on devices 0-3
+bwmonitor,1,2,3 --read --type=Sensor
+
+Read all sensors in a loop for 60 seconds, reading every 5 seconds
+bwmonitor --read --type=Sensor --loop=60 --read_every=5
+
+Read all sensors in a loop for 60 seconds, reading every 5 seconds and log the output
+bwmonitor --read --type=Sensor --loop=60 --read_every=5 --logfile=bwmon.log --logformat=simplified --logfileflags=append
+
+Write programming file to clock 0
+bwmonitor --write=0 --type=Clock --file=/path/to/si5338a.h
+
+Upgrade microcontroller firmware
+bwmonitor --write=1 --type=BMC --file=/path/to/hpm1fw.img
+
+Read 32 bytes from I2C channel 4, device 0xA0 starting at address 0
+bwmonitor --dev=0 --i2cread --devaddr=0x4a0 --addr=0 --count=32
+
+Write '<tab>test<newline>' to a PROM on I2C channel 4, device 0xA0 starting at address 0
+bwmonitor --dev=0 --i2cwrite --devaddr=0x4a0 --addr=0 --strval=\ttest\n
+
+Open raw IPMI command terminal to device 0
+bwmonitor --dev=0 --shell
+
+$ bwmonitor --read
+Board Management Controller    XUPVVP dev 0
+(1)  Microcontroller          Version 29117
+SDR Sensors                    XUPVVP dev 0
+(0)  Board Power              OK                 28 Watts
+(46) FPGA Power               OK                 20 Watts
+(18) FPGA Core Temperature    OK                 55 degrees C
+(11) FPGA Core Current        OK                 18.00 Amps
+(5)  FPGA Core Voltage        OK                 0.85 Volts
+(32) Vcc VBRAM Voltage        OK                 0.85 Volts
+(33) Vcc VBRAM Current        OK                 0.18 Amps
+(47) DIMM12 Power             OK                 0 Watts
+(9)  DIMM12 Voltage           OK                 1.19 Volts
+(10) DIMM12 Current           OK                 0.29 Amps
+(1)  12v Rear Current         OK                 0.80 Amps
+(2)  12v Rear Voltage         OK                 12.06 Volts
+(3)  12v Front Current        OK                 1.44 Amps
+(4)  12v Front Voltage        OK                 12.12 Volts
+(19) Board Temperature        OK                 53 degrees C
+(16) FPGA Supply 1 (front)    OK                 59 degrees C
+(12) FPGA Supply 2 Temp       OK                 66 degrees C
+(13) FPGA Supply 3 Temp       OK                 66 degrees C
+(14) FPGA Supply 4 Temp       OK                 67 degrees C
+(15) FPGA Supply 5 Temp       OK                 70 degrees C
+(17) FPGA Supply 6 (rear)     OK                 68 degrees C
+(38) DIMM-1 Temperature       Unavailable
+(39) DIMM-2 Temperature       Unavailable
+(41) P3V3 MP Voltage          OK                 3.25 Volts
+(40) P3V3 MP Current          OK                 3.59 Amps
+(7)  3.3v MP2 Voltage         OK                 3.30 Volts
+(8)  3.3v MP2 Current         OK                 0.52 Amps
+(20) Vcc AUX Voltage          OK                 1.78 Volts
+(21) Vcc AUX Current          OK                 1.09 Amps
+(42) DIMM12 Vpp Voltage       OK                 2.53 Volts
+(43) DIMM12 Vtt Voltage       OK                 0.60 Volts
+(34) QSFP-0 Temperature       Unavailable
+(35) QSFP-1 Temperature       Unavailable
+(36) QSFP-2 Temperature       Unavailable
+(37) QSFP-3 Temperature       Unavailable
+Pluggable Transceivers (SFP)   XUPVVP dev 0
+(0)  QSFP 0
+(1)  QSFP 1
+(2)  QSFP 2
+(3)  QSFP 3
+Programmable Clocks (PLL)      XUPVVP dev 0
+(0)  Si5341-A                 , , , , , , , , ,
+(1)  Si5341-B                 100, 300, 300, 100, 100, 100, 322.2656, 322.2656, 322.2656, 322.2656
+Memory Modules                 XUPVVP dev 0
+(0)  DIMM-1                   Not present
+(1)  DIMM-2                   Not present
+FRU EEPROMs                    XUPVVP dev 0
+(0)  FRU
+FPGAs                          XUPVVP dev 0
+(0)  FPGA
+Networking Modules             XUPVVP dev 0
+MAC Prom                                    1e90:...

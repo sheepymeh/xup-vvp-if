@@ -1,0 +1,204 @@
+$ bwconfig --help
+Usage:
+bwconfig [actions] [options]
+Command help and version information:
+--help[=<scan|add|remove|get|set|load|erase|reset|start|peek|poke>]
+--version
+View, scan for, add and remove devices:
+--list
+--scan=<network|pci|usb> [options]
+--add=<network|pci|usb> [options]
+--remove=N
+Get, set resource properties:
+--get=<device|resource|system>
+--set=<device|resource|system>
+Reset, load, start, erase resources:
+--load=filename[,flags] (default flags=0x203=load,compressed)
+--erase
+--reset[=flags]
+--start
+Read, write resources:
+--peek=A
+--poke=A
+Save, restore PCIe device:
+--save=N
+--restore=N
+
+$ bwconfig --help=scan
+bwconfig (cli) help: scan
+--scan=pci [--vendor=VID] [--dev-id=DID]
+Use '0x' prefix before VID or DID values.
+--scan=network --ip=IP[-LAST] [--port=PORT]
+--scan=usb [--vendor=VID] [--dev-id=DID]
+Examples:
+Scan for all BittWare PCI devices,
+bwconfig --scan=pci
+Scan for all PCI devices,
+bwconfig --scan=pci --vendor=0
+Scan for BittWare FPGA PCIe devices (see hil.h),
+bwconfig --scan=pci --dev-id=0x41
+Scan for BittWare network devices on IPs 10.20.0.5 to 10.20.0.245
+bwconfig --scan=network --ip=10.20.0.5-245
+Scan for BittWare network devices at a certain address and port
+bwconfig --scan=network --ip=192.168.1.5 --port=4794
+Scan for all BittWare USB devices,
+bwconfig --scan=usb
+
+$ bwconfig --help=add
+bwconfig (cli) help: add
+--add=pci [--vendor=VID] [--dev-id=DID] [--result=N]
+Use '0x' prefix before VID or DID values.
+--add=network --ip=IP[-LAST] [--port=PORT] [--result=N]
+--add=usb [--vendor=VID] [--dev-id=DID] [--result=N]
+Examples:
+Add the first BittWare PCI devices,
+bwconfig --add=pci
+Add the second BittWare FPGA PCIe device,
+bwconfig --add=pci --dev-id=0x41 --result=1
+Add the first BittWare network device on IP 10.20.0.5 to 10.20.0.245
+bwconfig --add=network --ip=10.20.0.5-245
+Add device 3 on server at 192.168.1.5
+bwconfig --scan=network --ip=192.168.1.5 --result=3
+Add the first BittWare USB device found,
+bwconfig --scan=usb
+
+$ bwconfig --help=remove
+bwconfig (cli) help: remove
+--remove=N
+Removes device N.
+Examples:
+Remove device 1,
+bwconfig --remove=1
+
+$ bwconfig --help=get
+bwconfig (cli) help: get
+--get=system [--prop=PROP]
+--get=device [--dev=N] [--prop=PROP]
+--get=resource [--dev=N] --type=<fpga|flash|bar>
+[--index=I] [--prop=PROP]
+Examples:
+Get all of the system properties
+bwconfig --get=system
+Get the name of your bwserver
+bwconfig --get=system --prop=HIL_SERVER_NAME_STR
+Get all of the device properties for device 0
+bwconfig --get=device
+Get the serial number of device 1
+bwconfig --dev=1 --get=device --prop=HIL_SERIAL_NUMBER_STR
+Get all of the properties for the second FPGA resource on device 0
+bwconfig --get=resource --type=fpga --index=1
+Get the name of the first FPGA on device 0.
+bwconfig --get=resource --type=fpga --prop=HIL_FPGA_NAME_STR
+
+$ bwconfig --help=set
+bwconfig (cli) help: set
+--set=system --prop=PROP --newvalue='STRING'|VALUE
+--set=device [--dev=N] --prop=PROP --newvalue='STRING'|VALUE
+--set=resource [--dev=N] --type=<fpga|flash> [--index=I]
+--prop=PROP --newvalue='STRING'|VALUE
+Use --get=<system|device|resource> commands to get possible property names
+Examples:
+Set the network name of your BwServer
+bwconfig --set=system --prop=HIL_SERVER_NAME_STR --newvalue='Server123'
+Set a static IP for device 0
+bwconfig --set=device --prop=HIL_NET_IP0_STR
+--newvalue='192.168.1.100'
+Set the name of the first FPGA.
+bwconfig --set=resource --type=fpga --index=0
+--prop=HIL_FPGA_NAME_STR --newvalue='fpga0'
+
+$ bwconfig --help=load
+bwconfig (cli) help: load
+--load=file[,flags] [--dev=N] --type=<fpga|flash|bar> [--index=I]
+Examples:
+Load the first FPGA with the file /usr/local/fpga.rbf
+bwconfig --load=/usr/local/fpga.rbf --type=fpga --index=0
+Load the first FPGA with the file /usr/local/fpga.rbf
+and use flags HIL_LOAD_RBF_COMPRESSED HilLoadOption flag:
+bwconfig --load=/usr/local/fpga.rbf,0x203 --type=fpga --index=0
+Refer to the Host Interface Library User�s Guide for further reading on
+HilLoadOption values basedbwconfig --help=erase.
+$ bwconfig --help=erase
+bwconfig (cli) help: erase
+--erase [--dev=N] --type=<fpga|flash> [--index=I]
+Examples:
+Unload the loaded FPGA image on device 0.
+bwconfig --erase --type=fpga
+Erase the image in FLASH resource 1 on device 0.
+bwconfig --erase --type=flash --index=1
+
+$ bwconfig --help=reset
+bwconfig (cli) help: reset
+--reset[=flags] [--dev=N] --type=<fpga|flash> [--index=I]
+When supplying a --reset commandline argument, you can optionally specify
+numerical reset flags (see HilResetOption values in hil_resource.h).
+Examples:
+Reset the second FPGA resource on device 0.
+bwconfig --reset --type=fpga --index=1
+
+$ bwconfig --help=start
+bwconfig (cli) help: start
+--start [--dev=N] --type=<fpga|flash> [--index=I]
+Examples:
+Load the second FPGA resource's default image on device 0.
+bwconfig --start --type=fpga --index=1
+Load the FPGAs from the image in FLASH resource 0 on device 0.
+bwconfig --start --type=flash
+
+$ bwconfig --help=peek
+bwconfig (cli) help: peek
+--peek=OFFSET [--dev=N] --type=<fpga|flash|bar> [--index=I] [--count=C]
+[--width=W]
+Reads C words of W sized data (4 bytes by default) starting at
+offset OFFSET.
+Examples:
+Read 2 32-bit words from offset 0 of the first FPGA
+bwconfig --peek=0 --type=fpga --count=2
+Read 8 bytes from offset 0x200 of BAR2
+bwconfig --peek=0x200 --type=bar --index=2 --width=1 --count=8
+
+$ bwconfig --help=poke
+bwconfig (cli) help: poke
+--poke=OFFSET [--dev=N] --type=<fpga|flash|bar> [--index=I] [--count=C]
+[--width=W] --newvalue=VALUE
+Writes VALUE C times using W sized data (4 bytes by default) starting at
+offset OFFSET.
+Examples:
+Write 2 zeroes as 32-bit words to offset 0 of the first FPGA
+bwconfig --poke=0 --type=fpga --count=2 --newvalue=0
+Write 0x12 as a byte to offset 0x200 of BAR2
+bwconfig --poke=0x200 --type=bar --index=2 --width=1
+
+$ bwconfig --get=device --dev=0
+device property HIL_BOARD_TYPE = '99'
+device property HIL_CLUSTER_NUMBER = '0'
+device property HIL_CLUSTER_COUNT = '1'
+device property HIL_PART_NUMBER_STR = 'XUPVVP-...'
+device property HIL_SERIAL_NUMBER_STR = '...'
+device property HIL_SERIAL_NUMBER = '...'
+device property HIL_FACTORY_DATE_STR = 'Jan 01, 2019, 12:00 AM'
+device property HIL_LOT_NUMBER = '...'
+device property HIL_WRITTEN_BY_STR = 'N/A'
+device property HIL_BOARD_REVISION_STR = '2.5.0.0.b'
+device property HIL_NET_COUNT = '0'
+
+$ bwconfig --get=resource --type=fpga --index=0
+resource fpga property HIL_FPGA_SIZE_STR = '13'
+resource fpga property HIL_FPGA_CLASS = 5
+resource fpga property HIL_FPGA_BOOT_SOURCE = 1
+
+$ bwconfig --get=resource --type=flash --index=0
+resource flash property HIL_FLASH_NAME_STR = 'User'
+resource flash property HIL_FLASH_SIZE = 196608
+resource flash property HIL_FLASH_FILENAME_STR = '/home/common/binaries/xupvvp/2.5.0.0.b/fpga/flashConfig1/flashimage_13c07742_414d0001.bin'
+resource flash property HIL_FLASH_FILESIZE = 4194304
+resource flash property HIL_FLASH_FILEDATE_STR = 'December 17, 2018, 12:18 PM'
+resource flash property HIL_FLASH_DATE_WRITTEN_STR = 'February 07, 2019, 03:24 PM'
+
+$ bwconfig --get=resource --type=flash --index=1
+resource flash property HIL_FLASH_NAME_STR = 'Backup'
+resource flash property HIL_FLASH_SIZE = 65536
+resource flash property HIL_FLASH_FILENAME_STR = '/home/common/binaries/xupvvp/2.5.0.0.b/fpga/vu13p/pcie_base/pcie_base.bit'
+resource flash property HIL_FLASH_FILESIZE = 26123712
+resource flash property HIL_FLASH_FILEDATE_STR = 'December 13, 2018, 03:54 PM'
+resource flash property HIL_FLASH_DATE_WRITTEN_STR = 'February 07, 2019, 03:04 PM'

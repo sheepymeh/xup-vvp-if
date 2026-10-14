@@ -1,0 +1,34 @@
+--- a/xilinx_xdma_pcie_x0y1.xdc
++++ b/xilinx_xdma_pcie_x0y1.xdc
+@@ -85,8 +85,8 @@
+ set_property CONFIG_VOLTAGE 1.8 [current_design]
+ #
+ #############################################################################################################
+-set_property LOC [get_package_pins -of_objects [get_bels [get_sites -filter {NAME =~ *COMMON*} -of_objects [get_iobanks -of_objects [get_sites GTYE4_CHANNEL_X1Y23]]]/REFCLK0P]] [get_ports sys_clk_p]
+-set_property LOC [get_package_pins -of_objects [get_bels [get_sites -filter {NAME =~ *COMMON*} -of_objects [get_iobanks -of_objects [get_sites GTYE4_CHANNEL_X1Y23]]]/REFCLK0N]] [get_ports sys_clk_n]
++set_property LOC [get_package_pins AT11] [get_ports sys_clk_p]
++set_property LOC [get_package_pins AT10] [get_ports sys_clk_n]
+ #
+ #############################################################################################################
+ #############################################################################################################
+--- a/xdma_app.v
++++ b/xdma_app.v
+@@ -119,6 +119,7 @@
+ );
+   // wire/reg declarations
+   wire            sys_reset;
++  wire            sys_resetn;
+   reg  [25:0]     user_clk_heartbeat;
+
+
+--- a/xilinx_dma_pcie_ep.sv
++++ b/xilinx_dma_pcie_ep.sv
+@@ -83,6 +83,8 @@
+     input 					 sys_clk_n,
+     input 					 sys_rst_n
+  );
++  wire m_axi_rlast;
++
+
+    //-----------------------------------------------------------------------------------------------------------------------
+
