@@ -17,9 +17,8 @@ Delete or move `build/` to start a fresh build.
 
 ## Program
 
-Only one Digilent USB JTAG target should be attached to the host.
-
-Remove the PCIe function before programming, program, then rescan its bus:
+Remove an active XDMA PCIe function before programming, then rescan after
+loading XDMA:
 
 ```sh
 echo 1 | sudo tee /sys/bus/pci/devices/0000:06:00.0/remove
@@ -27,13 +26,14 @@ vivado -mode batch -source vivado/03-program.tcl
 echo 1 | sudo tee /sys/class/pci_bus/0000:06/rescan
 ```
 
-Use the PCIe address and bus for your host.
+Use the PCIe address and bus for your host. Rescan after switching from a non-PCIe image back to XDMA.
 
 ## Test
 
-When moving the card to another host, edit `BDF` (run `lspci -Dnn -d 10ee:9031`),
-`XDMA_INDEX` (the N in `/dev/xdmaN_*`),
-and the expected `LINK_SPEED` / `LINK_WIDTH` in `config.sh`.
+Install [the XDMA reference driver and DMA tools](https://github.com/Xilinx/dma_ip_drivers/tree/master/XDMA).
 
-Then, run `scripts/test.sh` as root (for access to XDMA H2C/C2H channels) to check PCIe link status,
-then attempt and verify a 1KB round-trip.
+Override `BDF`, `XDMA_INDEX`, `LINK_SPEED` and `LINK_WIDTH` for another host,
+see `config.sh`. `DMA_BYTES` defaults to 524288 and `BENCH_COUNT` to 256.
+
+Then, run `scripts/test.sh` with access to XDMA H2C/C2H channels to check PCIe
+link status, verify a 512 KiB round-trip, and benchmark both directions.

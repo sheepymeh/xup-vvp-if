@@ -1,0 +1,61 @@
+    // ---- GTY${number}: ${port}, channels ${first_channel}-${last_channel} ----
+
+    // Reference input and 161.1328125 MHz control clock
+    wire q${number}_ref, q${number}_odiv, q${number}_clk, q${number}_txclk, q${number}_rxclk;
+    IBUFDS_GTE4 #(.REFCLK_HROW_CK_SEL(2'b00)) q${number}_refbuf (
+        .I(q${number}_ref_p), .IB(q${number}_ref_n), .CEB(1'b0),
+        .O(q${number}_ref), .ODIV2(q${number}_odiv));
+    BUFG_GT q${number}_freerun (.I(q${number}_odiv), .CE(1'b1), .CEMASK(1'b0),
+        .CLR(1'b0), .CLRMASK(1'b0), .DIV(3'b001), .O(q${number}_clk));
+
+    // Four GT lanes, native PRBS31 generators and checkers
+    wire [3:0] q${number}_power, q${number}_txpma, q${number}_rxpma;
+    wire [3:0] q${number}_locked, q${number}_prbserr, q${number}_cntreset, q${number}_forceerr, q${number}_polarity;
+    wire q${number}_reset, q${number}_rxreset, q${number}_pmareset;
+    wire q${number}_txdone, q${number}_rxdone, q${number}_qplllock;
+    wire [2:0] q${number}_loopback;
+    wire [39:0] q${number}_drpaddr;
+    wire [3:0] q${number}_drpen, q${number}_drprdy;
+    wire [63:0] q${number}_drpdo;
+    gty_quad_${number} q${number}_gt (
+        .gtyrxn_in(q${number}_rx_n), .gtyrxp_in(q${number}_rx_p),
+        .gtytxn_out(q${number}_tx_n), .gtytxp_out(q${number}_tx_p),
+        .gtrefclk00_in(q${number}_ref),
+        .gtwiz_userclk_tx_reset_in(~(&q${number}_txpma)),
+        .gtwiz_userclk_rx_reset_in(~(&q${number}_rxpma)),
+        .gtwiz_userclk_tx_usrclk2_out(q${number}_txclk),
+        .gtwiz_userclk_rx_usrclk2_out(q${number}_rxclk),
+        .gtwiz_reset_clk_freerun_in(q${number}_clk),
+        .gtwiz_reset_all_in(q${number}_reset),
+        .gtwiz_reset_tx_pll_and_datapath_in(1'b0),
+        .gtwiz_reset_tx_datapath_in(1'b0),
+        .gtwiz_reset_rx_pll_and_datapath_in(1'b0),
+        .gtwiz_reset_rx_datapath_in(q${number}_rxreset),
+        .gtwiz_reset_tx_done_out(q${number}_txdone),
+        .gtwiz_reset_rx_done_out(q${number}_rxdone),
+        .gtwiz_userdata_tx_in(256'd0),
+        .loopback_in({4{q${number}_loopback}}),
+        .txprbssel_in({4{4'b0101}}), .rxprbssel_in({4{4'b0101}}),
+        .txprbsforceerr_in(q${number}_forceerr), .rxpolarity_in(q${number}_polarity),
+        .rxprbscntreset_in(q${number}_cntreset),
+        .rxpmareset_in({4{q${number}_pmareset}}),
+        .rxprbslocked_out(q${number}_locked), .rxprbserr_out(q${number}_prbserr),
+        .gtpowergood_out(q${number}_power), .txpmaresetdone_out(q${number}_txpma),
+        .rxpmaresetdone_out(q${number}_rxpma),
+        .qpll0lock_out(q${number}_qplllock),
+        .drpaddr_in(q${number}_drpaddr), .drpclk_in({4{q${number}_clk}}),
+        .drpdi_in(64'd0), .drpen_in(q${number}_drpen), .drprst_in(4'd0),
+        .drpwe_in(4'd0), .drpdo_out(q${number}_drpdo), .drprdy_out(q${number}_drprdy));
+
+    // JTAG control, lane markers, polarity and read-only counter access
+    quad_control q${number}_control (
+        .clk(q${number}_clk), .txclk(q${number}_txclk), .rxclk(q${number}_rxclk),
+        .powergood(q${number}_power), .txpma(q${number}_txpma), .rxpma(q${number}_rxpma),
+        .txdone(q${number}_txdone), .rxdone(q${number}_rxdone),
+        .qplllock(q${number}_qplllock),
+        .locked(q${number}_locked), .prbserr(q${number}_prbserr),
+        .reset_all(q${number}_reset), .reset_rx(q${number}_rxreset), .reset_pma(q${number}_pmareset),
+        .loopback(q${number}_loopback), .count_reset(q${number}_cntreset),
+        .force_error(q${number}_forceerr), .rxpolarity(q${number}_polarity), .drpaddr(q${number}_drpaddr),
+        .drpen(q${number}_drpen), .drpdo(q${number}_drpdo), .drprdy(q${number}_drprdy));
+

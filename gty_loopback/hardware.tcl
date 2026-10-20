@@ -1,7 +1,6 @@
 set root [file dirname [file normalize [info script]]]
 set out [file join $root build]
 
-# ---- Command arguments and connector mapping ----
 set mode [lindex $argv 0]
 if {$mode ni {program test external} ||
     ($mode ne "external" && [llength $argv] != 1) ||
@@ -9,19 +8,14 @@ if {$mode ni {program test external} ||
     error {Usage: hardware.tcl program|test|external PORT[:PEER] ...}
 }
 
-set ports [dict create \
-    QSFP0 {233} \
-    QSFP1 {232} \
-    QSFP2 {229} \
-    QSFP3 {228} \
-    SLIMSAS1 {129 133} \
-    SLIMSAS2 {120 121} \
-]
+source [file join $root .. common hardware.tcl]
+source [file join $root .. common vio.tcl]
+source [file join $out mapping.tcl]
 set names [dict create]
 set channel_ports [dict create]
-dict for {port quads} $ports {
+dict for {port port_quads} $ports {
     set offset 0
-    foreach quad $quads {
+    foreach quad $port_quads {
         for {set lane 0} {$lane < 4} {incr lane} {
             dict set names $quad,$lane "$port.[expr {$offset + $lane}](q$quad/lane$lane)"
             dict set channel_ports $quad,$lane $port
@@ -58,78 +52,14 @@ if {$mode eq "external"} {
     }
 }
 
-# Reject probe maps from the old image before connecting to hardware
 source [file join $out probes.tcl]
-dict for {quad pins} $probe_names {
-    if {![dict exists $pins probe_out10]} {
-        error "Old VIO interface on quad $quad, rebuild the image"
-    }
-}
 
-# ---- Hardware connection and programming ----
-open_hw_manager
-connect_hw_server
-set targets [get_hw_targets]
-if {[llength $targets] != 1} {
-    error "Unexpected JTAG targets: $targets"
-}
-open_hw_target [lindex $targets 0]
-set devices [get_hw_devices]
-if {[llength $devices] != 1} {
-    error "Expected one FPGA: $devices"
-}
-set dev [lindex $devices 0]
-if {[get_property PART $dev] ne "xcvu13p"} {
-    error "Unexpected FPGA identity"
-}
-set_property PROBES.FILE [file join $out all_channels.ltx] $dev
-if {$mode eq "program"} {
-    set_property PROGRAM.FILE [file join $out all_channels.bit] $dev
-    puts "PROGRAM_MODE=volatile_JTAG_SRAM"
-    program_hw_devices $dev
-    after 3000
-}
-refresh_hw_device $dev
-set vios [get_hw_vios -quiet -of_objects $dev]
-if {[llength $vios] != 8} {
-    error "Expected eight VIO cores, got $vios"
-}
-
-# Resolve VIO net names from the generated probe map
-set cores [dict create]
-foreach quad [dict keys $probe_names] {
-    set found {}
-    foreach vio $vios {
-        if {[get_property CELL_NAME $vio] eq "q${quad}_control/vio"} {
-            lappend found $vio
-        }
-    }
-    if {[llength $found] != 1} {
-        error "Missing VIO for quad $quad"
-    }
-    dict set cores $quad [lindex $found 0]
-    dict for {port net} [dict get $probe_names $quad] {
-        set probes [get_hw_probes -quiet $net -of_objects [lindex $found 0]]
-        if {[llength $probes] != 1} {
-            error "Missing probe $quad $port $net"
-        }
-        dict set mapped $quad $port [lindex $probes 0]
-        if {[string match probe_in* $port]} {
-            set_property INPUT_VALUE_RADIX HEX [lindex $probes 0]
-        } else {
-            set_property OUTPUT_VALUE_RADIX HEX [lindex $probes 0]
-        }
-    }
-}
-
-# ---- VIO access ----
-# Probe indices are defined by quad_control.v and build.tcl
+# Probe indices match quad_control.v, widths come from generate.py
 # Inputs: 0 ready, 1 PRBS lock, 2 sticky errors, 3 interruptions
 #         4 DRP data, 5 DRP done, 6 DRP timeout, 7 DRP busy
 # Outputs: 0 full reset, 1 RX reset, 2 RX PMA reset, 3 loopback mode
 #          4 counter reset, 5 clear faults, 6 measure, 7 lane error toggles
 #          8 DRP address, 9 DRP request, 10 RX polarity
-# Output changes commit per quad
 proc output_one {quad index value} {
     set_property OUTPUT_VALUE [format %X $value] [dict get $::mapped $quad probe_out$index]
     commit_hw_vio [dict get $::cores $quad]
@@ -145,12 +75,7 @@ proc output_all {index value} {
 }
 
 proc input_value {quad index} {
-    set raw [string trim [get_property INPUT_VALUE [dict get $::mapped $quad probe_in$index]]]
-    regsub -nocase {^0x} $raw {} raw
-    if {![regexp -nocase {^[0-9a-f]+$} $raw]} {
-        error "Invalid VIO value: $raw"
-    }
-    return [expr "0x$raw"]
+    return [vio::read [dict get $::mapped $quad probe_in$index]]
 }
 
 proc pulse {index} {
@@ -159,8 +84,6 @@ proc pulse {index} {
     output_all $index 0
 }
 
-# ---- Qualification and native error counters ----
-# Unselected quads never contribute to pass/fail checks
 proc status {label clean} {
     set qualified 1
     dict for {quad vio} $::cores {
@@ -257,7 +180,6 @@ proc start_measurement {} {
     }
 }
 
-# ---- Lane discovery ----
 # Identify routes by changing only one transmitter at a time
 proc discover {} {
     set routes [dict create]
@@ -312,120 +234,127 @@ proc discover {} {
             puts "LANE_MAP=TX:[dict get $::names $tx],RX:[dict get $::names $rx],rx_inverted:$inverted"
         }
     }
-    if {[dict size $routes] != 4 * [dict size $::cores]} {
-        error "Incomplete lane mapping"
-    }
     puts "DISCOVERY=PASS,lanes:[dict size $routes]"
 }
 
-# ---- Test selection and startup ----
-
-if {$mode eq "program"} {
-    puts "PROGRAM_COMPLETE=8_VIO_CORES"
-    close_hw_target
-    close_hw_manager
-    exit
-}
-
-# Keep only requested quads for every subsequent helper call
-if {$mode eq "external"} {
-    set selected [dict create]
-    foreach port [dict keys $peers] {
-        foreach quad [dict get $ports $port] {
-            dict set selected $quad [dict get $cores $quad]
-        }
+set dev [hardware::connect [file join $out all_channels.ltx]]
+try {
+    if {$mode eq "program"} {
+        hardware::program $dev [file join $out all_channels.bit]
+        after 3000
     }
-    set cores $selected
-}
-set channels [expr {4 * [dict size $cores]}]
+    refresh_hw_device $dev
+    set resolved [vio::resolve $dev $vio_map]
+    set cores [dict create]
+    set mapped [dict create]
+    foreach quad $quads {
+        set number [lindex $quad 0]
+        set cell q${number}_control/vio
+        dict set cores $number [dict get $resolved $cell core]
+        dict set mapped $number [dict get $resolved $cell pins]
+    }
 
-# Test startup, hold fault capture clear through loopback and reset changes
-puts "TEST_MODE=$mode,concurrent_channels:$channels,PRBS31,nominal_25.78125_Gbps"
-output_all 6 0
-output_all 5 1
-output_all 9 0
-output_all 4 0
-output_all 7 0
-output_all 10 0
-output_all 2 0
-output_all 3 0
-output_all 1 1
-
-# Hold RX reset while changing loopback, then restart the PMA and reset helper
-pulse 0
-after 3000
-if {$mode eq "test"} {
-    output_all 3 2
-}
-after 100
-output_all 1 0
-pulse 2
-after 3000
-pulse 0
-after 3000
-
-# ---- External polarity acquisition and injection checks ----
-# Try RX inversion on lanes that have not acquired PRBS lock
-set polarity [dict create]
-dict for {quad vio} $cores {
-    set invert 0
+    if {$mode eq "program"} {
+        puts "PROGRAM_COMPLETE=8_VIO_CORES"
+        return
+    }
     if {$mode eq "external"} {
-        refresh_hw_vio $vio
-        set invert [expr {15 ^ [input_value $quad 1]}]
-        output_one $quad 10 $invert
+        set selected [dict create]
+        foreach port [dict keys $peers] {
+            foreach quad [dict get $ports $port] {
+                dict set selected $quad [dict get $cores $quad]
+            }
+        }
+        set cores $selected
     }
-    dict set polarity $quad $invert
-}
-if {$mode eq "external"} {
+    set channels [expr {4 * [dict size $cores]}]
+
+    # Test startup, hold fault capture clear through loopback and reset changes
+    puts "TEST_MODE=$mode,concurrent_channels:$channels,PRBS31,nominal_25.78125_Gbps"
+    output_all 6 0
+    output_all 5 1
+    output_all 9 0
+    output_all 4 0
+    output_all 7 0
+    output_all 10 0
+    output_all 2 0
+    output_all 3 0
+    output_all 1 1
+
+    # Hold RX reset while changing loopback, then restart the PMA and reset helper
+    pulse 0
+    after 3000
+    if {$mode eq "test"} {
+        output_all 3 2
+    }
     after 100
+    output_all 1 0
     pulse 2
     after 3000
-}
-qualify
-if {$mode eq "external"} {
-    discover
-} else {
-    start_measurement
-    after 100
-    output_all 7 15
-    after 1000
-    dict for {channel count} [counters] {
-        if {$count == 0} {
-            error "Error injection missed on [dict get $names $channel]"
-        }
-    }
-    if {![status INJECTION 0]} {
-        error "Channels lost qualification during injection"
-    }
-    dict for {quad vio} $cores {
-        if {[input_value $quad 2] != 15 || [input_value $quad 3] != 0} {
-            error "Sticky injection check failed on quad $quad"
-        }
-    }
-}
+    pulse 0
+    after 3000
 
-# ---- Concurrent 120-second soak and results ----
-# Clear discovery or injection faults before enabling the shared measurement
-puts "INJECTION_RESULT=PASS,channels:$channels"
-output_all 6 0
-output_all 5 1
-output_all 7 0
-after 100
-start_measurement
-for {set sample 1} {$sample <= 12} {incr sample} {
-    after 10000
-    if {![status SOAK_$sample 1]} {
-        error "Channel readiness/lock dropped during soak"
+    # Try RX inversion on lanes that have not acquired PRBS lock
+    set polarity [dict create]
+    dict for {quad vio} $cores {
+        set invert 0
+        if {$mode eq "external"} {
+            refresh_hw_vio $vio
+            set invert [expr {15 ^ [input_value $quad 1]}]
+            output_one $quad 10 $invert
+        }
+        dict set polarity $quad $invert
     }
+    if {$mode eq "external"} {
+        after 100
+        pulse 2
+        after 3000
+    }
+    qualify
+    if {$mode eq "external"} {
+        discover
+    } else {
+        start_measurement
+        after 100
+        output_all 7 15
+        after 1000
+        dict for {channel count} [counters] {
+            if {$count == 0} {
+                error "Error injection missed on [dict get $names $channel]"
+            }
+        }
+        if {![status INJECTION 0]} {
+            error "Channels lost qualification during injection"
+        }
+        dict for {quad vio} $cores {
+            if {[input_value $quad 2] != 15 || [input_value $quad 3] != 0} {
+                error "Sticky injection check failed on quad $quad"
+            }
+        }
+    }
+
+    # Clear discovery or injection faults before enabling the shared measurement
+    puts "INJECTION_RESULT=PASS,channels:$channels"
+    output_all 6 0
+    output_all 5 1
+    output_all 7 0
+    after 100
+    start_measurement
+    for {set sample 1} {$sample <= 12} {incr sample} {
+        after 10000
+        if {![status SOAK_$sample 1]} {
+            error "Channel readiness/lock dropped during soak"
+        }
+    }
+    set end [counters]
+    if {![status END 1]} {
+        error "Channel readiness/lock dropped at end"
+    }
+    dict for {channel count} $end {
+        puts "CHANNEL_RESULT=[dict get $names $channel],errors:$count"
+    }
+    require_zero $end
+    puts "RESULT=PASS,mode:$mode,channels:$channels,INJECTION=PASS"
+} finally {
+    hardware::close
 }
-set end [counters]
-if {![status END 1]} {
-    error "Channel readiness/lock dropped at end"
-}
-dict for {channel count} $end {
-    puts "CHANNEL_RESULT=[dict get $names $channel],errors:$count"
-}
-require_zero $end
-puts "RESULT=PASS,mode:$mode,channels:$channels,INJECTION=PASS"
-close_hw_target
-close_hw_manager

@@ -4,8 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . ./config.sh
 SYSFS=/sys/bus/pci/devices
-DMA_BYTES=524288
-BENCH_COUNT=256
+DMA_BYTES=${DMA_BYTES:-524288}
+BENCH_COUNT=${BENCH_COUNT:-256}
 
 fail() {
     echo "FAIL: $*" >&2

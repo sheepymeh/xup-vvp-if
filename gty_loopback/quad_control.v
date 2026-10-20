@@ -1,18 +1,3 @@
-// Clock-domain crossing for control levels and sticky status
-module sync_bus #(parameter WIDTH = 1) (
-    input wire clk,
-    input wire [WIDTH-1:0] value,
-    output reg [WIDTH-1:0] synced = 0
-);
-    (* ASYNC_REG = "TRUE" *) reg [WIDTH-1:0] sync_first = 0;
-    (* ASYNC_REG = "TRUE" *) reg [WIDTH-1:0] sync_second = 0;
-    always @(posedge clk) begin
-        sync_first <= value;
-        sync_second <= sync_first;
-        synced <= sync_second;
-    end
-endmodule
-
 // RX-domain faults persist between JTAG reads
 module prbs_monitor (
     input wire clk, clear, measure,
@@ -32,14 +17,12 @@ module prbs_monitor (
 endmodule
 
 module quad_control (
-    // Control clock and GT user clocks
     input wire clk, txclk, rxclk,
 
     // Lane status and shared reset/PLL completion
     input wire [3:0] powergood, txpma, rxpma, locked, prbserr,
     input wire txdone, rxdone, qplllock,
 
-    // Reset, loopback, error injection and polarity controls
     output wire reset_all, reset_rx, reset_pma,
     output wire [2:0] loopback,
     output wire [3:0] count_reset, force_error, rxpolarity,
@@ -50,7 +33,6 @@ module quad_control (
     input wire [63:0] drpdo,
     input wire [3:0] drprdy
 );
-    // ---- VIO controls and clock-domain crossings ----
     wire count_reset_vio, clear_vio, measure_vio;
     wire [3:0] inject_toggle, inject_tx, polarity_vio;
     wire [9:0] address_vio;
@@ -68,7 +50,6 @@ module quad_control (
     always @(posedge txclk) inject_previous <= inject_tx;
     assign force_error = inject_tx ^ inject_previous;
 
-    // ---- Sticky RX faults and readiness ----
     // Capture faults before returning status to the control clock
     wire [3:0] error_seen_rx, unlock_seen_rx, error_seen, unlock_seen;
     prbs_monitor monitor (.clk(rxclk), .clear(clear_rx), .measure(measure_rx),
@@ -85,7 +66,6 @@ module quad_control (
         .value({powergood, txpma, rxpma, txdone, rxdone, qplllock}),
         .synced(status_sync));
 
-    // ---- RX clock watchdog ----
     // PRBS lock is latched, detect a stopped RX monitor clock independently
     reg [7:0] rx_heartbeat = 0;
     always @(posedge rxclk) rx_heartbeat <= rx_heartbeat + 1'b1;
@@ -109,7 +89,6 @@ module quad_control (
         else if (measure_vio) interrupted <= interrupted | ~ready_sync;
     end
 
-    // ---- Read-only DRP transaction ----
     // Broadcast one address, retain each lane response independently
     reg request_previous = 0;
     reg [3:0] enable = 0, busy = 0, done = 0, timeout = 0;
@@ -144,8 +123,7 @@ module quad_control (
         end
     end
 
-    // ---- JTAG VIO interface ----
-    // Probe indices couple to build.tcl widths and hardware.tcl accesses
+    // Probe widths in generate.py, indices in hardware.tcl
     prbs_vio vio (
         .clk(clk),
         .probe_in0(ready_sync),

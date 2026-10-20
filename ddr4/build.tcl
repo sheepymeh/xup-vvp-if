@@ -1,52 +1,36 @@
-# ---- Local project and fixed memory geometry ----
 set root [file dirname [file normalize [info script]]]
 set out [file join $root build]
+set common [file join $root .. common]
+source [file join $common build.tcl]
 exec sh [file join $root prepare.sh]
-create_project ddr4_test [file join $out project] -part xcvu13p-figd2104-2-e
+create_project ddr4_test [file join $out project] -part $::board::part
 set_property target_language Verilog [current_project]
-add_files [list [file join $root powerup_reset.v] [file join $root memory_status.v]]
+add_files [list [file join $root powerup_reset.v] [file join $root memory_status.v] \
+    [file join $common rtl sync_bus.v]]
+add_files -fileset constrs_1 [file join $common rtl sync_bus.xdc]
 import_files -norecurse [file join $root BLS4G4D240FSB.csv]
 foreach dimm {0 1} {
-    add_files -fileset constrs_1 [file join build constraints dimm${dimm}.xdc]
+    add_files -fileset constrs_1 [file join $out constraints dimm${dimm}.xdc]
 }
 add_files -fileset constrs_1 [file join $root startup.xdc]
-set_property USED_IN_SYNTHESIS false [get_files startup.xdc]
+set_property USED_IN_SYNTHESIS false [get_files {startup.xdc sync_bus.xdc}]
 set csv [get_files -all *BLS4G4D240FSB.csv]
-if {[llength $csv] != 1} {
-    error "Expected one custom memory-part CSV"
-}
 
-# ---- Calibration monitor, clocked independently of DDR4 ----
-create_ip -name vio -vendor xilinx.com -library ip -module_name ddr_status_vio
-set_property -dict [list CONFIG.C_NUM_PROBE_IN 1 CONFIG.C_NUM_PROBE_OUT 0 \
-    CONFIG.C_PROBE_IN0_WIDTH 4] [get_ips ddr_status_vio]
-generate_target all [get_ips ddr_status_vio]
+build::create_vio ddr_status_vio {4 4 32 32 32} {}
 update_compile_order -fileset sources_1
 
-# ---- Independent controller and JTAG AXI path per DIMM ----
-# Vivado chooses external port suffixes, identify the newly added port by name
 proc expose_interface {pin name} {
-    set before [get_bd_intf_ports -quiet]
-    make_bd_intf_pins_external [get_bd_intf_pins $pin]
-    set added {}
-    foreach port [get_bd_intf_ports] {
-        if {$port ni $before} {
-            lappend added $port
-        }
-    }
-    if {[llength $added] != 1} {
-        error "Expected one new external interface for $pin"
-    }
-    set port [lindex $added 0]
-    if {[get_property NAME $port] ne $name} {
-        set_property NAME $name $port
-    }
+    set pin [get_bd_intf_pins $pin]
+    make_bd_intf_pins_external $pin
+    set port [get_bd_intf_ports -of_objects [get_bd_intf_nets -of_objects $pin]]
+    set_property NAME $name $port
 }
 
 create_bd_design ddr4_bd
 create_bd_cell -type module -reference powerup_reset por
 create_bd_cell -type module -reference memory_status status
 connect_bd_net [get_bd_pins por/monitor_clk] [get_bd_pins status/clk]
+connect_bd_net [get_bd_pins por/startup_status] [get_bd_pins status/startup_status]
 
 foreach dimm {0 1} {
     set controller ddr4_$dimm
@@ -80,7 +64,7 @@ foreach dimm {0 1} {
     connect_bd_net [get_bd_pins por/sys_rst] [get_bd_pins $controller/sys_rst]
     connect_bd_net [get_bd_pins $controller/c0_ddr4_ui_clk] \
         [get_bd_pins $master/aclk] [get_bd_pins $reset/slowest_sync_clk] \
-        [get_bd_pins interconnect_$dimm/aclk]
+        [get_bd_pins interconnect_$dimm/aclk] [get_bd_pins status/ui_clk$dimm]
     connect_bd_net [get_bd_pins $controller/c0_ddr4_ui_clk_sync_rst] \
         [get_bd_pins $reset/ext_reset_in] [get_bd_pins status/reset$dimm]
     connect_bd_net [get_bd_pins locked_$dimm/dout] [get_bd_pins $reset/dcm_locked]
@@ -107,29 +91,13 @@ set_property TOP_AUTO_SET 0 [get_filesets sources_1]
 set_property top ddr4_bd_wrapper [get_filesets sources_1]
 update_compile_order -fileset sources_1
 
-# ---- Synthesis and routing ----
 create_ip_run $bd
 create_ip_run [get_ips ddr_status_vio]
-foreach run [get_runs] {
-    foreach report [get_report_configs -of_objects $run] {
-        set_property IS_ENABLED false $report
-    }
-}
+build::disable_optional_reports
 foreach run [get_runs -filter {IS_SYNTHESIS == 1 && NAME != synth_1}] {
-    if {[get_property PROGRESS $run] eq "100%"} {
-        continue
-    }
-    launch_runs $run -jobs 1
-    wait_on_run $run
-    if {[get_property PROGRESS $run] ne "100%"} {
-        error "IP synthesis failed: $run, [get_property STATUS $run]"
-    }
+    build::run $run
 }
-launch_runs synth_1 -jobs 1
-wait_on_run synth_1
-if {![string match "*Complete*" [get_property STATUS [get_runs synth_1]]]} {
-    error "Top synthesis failed"
-}
+build::run synth_1
 
 # Keep debug discovery available even with no calibrated DIMM UI clocks
 open_run synth_1
@@ -138,45 +106,20 @@ close [open $debug_xdc w]
 add_files -fileset constrs_1 $debug_xdc
 set_property USED_IN_SYNTHESIS false [get_files $debug_xdc]
 set_property TARGET_CONSTRS_FILE $debug_xdc [get_filesets constrs_1]
-set monitor [get_nets -hier -filter {NAME == ddr4_bd_i/por_monitor_clk}]
-if {[llength $monitor] != 1} {
-    error "Missing independent debug monitor clock"
-}
 disconnect_debug_port dbg_hub/clk
-connect_debug_port dbg_hub/clk $monitor
+connect_debug_port dbg_hub/clk [get_nets -hier -filter {NAME == ddr4_bd_i/por_monitor_clk}]
 set_property C_CLK_INPUT_FREQ_HZ 50000000 [get_debug_cores dbg_hub]
 save_constraints -force
 close_design
 
-launch_runs impl_1 -to_step route_design -jobs 1
-wait_on_run impl_1
-if {![string match "*Complete*" [get_property STATUS [get_runs impl_1]]]} {
-    error "Implementation failed"
-}
+build::run impl_1 -to_step route_design
 open_run impl_1
 
-# ---- Required implementation checks and programming artifacts ----
-foreach dimm {0 1} {
-    set ports [get_ports -quiet C${dimm}_DDR4_0_*]
-    if {[llength $ports] == 0} {
-        error "Missing DIMM$dimm interface, incorrect synthesis top"
-    }
-}
-foreach primitive {STARTUPE3 DCIRESET} {
-    if {[llength [get_cells -hier -filter "REF_NAME == $primitive"]] != 1} {
-        error "Expected one device-wide $primitive"
-    }
-}
-if {![report_route_status -boolean_check ROUTED_FULLY]} {
-    error "Unrouted nets"
-}
-foreach delay {max min} {
-    set path [get_timing_paths -delay_type $delay -max_paths 1]
-    if {[llength $path] != 1 || [get_property SLACK $path] < 0} {
-        error "Missing or failing $delay timing path"
-    }
-}
+build::check_synchronizers
+build::check_implementation [file join $out reports]
 write_bitstream -force [file join $out ddr4_test.bit]
 write_debug_probes -force [file join $out ddr4_test.ltx]
+exec python3 [file join $common probes.py] \
+    [file join $out ddr4_test.ltx] [file join $out probes.tcl]
 puts "BUILD_COMPLETE, FPGA_NOT_PROGRAMMED"
 close_project

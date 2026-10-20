@@ -10,7 +10,7 @@ echo "Generating Vivado example project"
 vivado -mode batch -source vivado/01-generate_example.tcl \
     -log build/logs/example.log -journal build/logs/example.jou
 
-patch --batch --fuzz=0 -p1 -d build/example/xdma_0_ex/imports < vivado/xup-vvp.patch
+patch --batch -p1 -d build/example/xdma_0_ex/imports < vivado/xup-vvp.patch
 
 echo "Building Vivado project"
 vivado -mode batch -source vivado/02-build.tcl \

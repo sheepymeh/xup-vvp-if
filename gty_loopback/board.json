@@ -1,0 +1,132 @@
+{
+  "quads": [
+    {
+      "number": 233,
+      "port": "QSFP0",
+      "channels": ["X1Y52", "X1Y53", "X1Y54", "X1Y55"],
+      "refclk": "clk1",
+      "common": "GTYE4_COMMON_X1Y13",
+      "bel": "IBUFDS1_GTYE4",
+      "pins": {
+        "ref_p": "B11",
+        "ref_n": "B10",
+        "rx_p": ["E4", "D2", "C4", "A5"],
+        "rx_n": ["E3", "D1", "C3", "A4"],
+        "tx_p": ["E9", "D7", "C9", "A9"],
+        "tx_n": ["E8", "D6", "C8", "A8"]
+      }
+    },
+    {
+      "number": 232,
+      "port": "QSFP1",
+      "channels": ["X1Y48", "X1Y49", "X1Y50", "X1Y51"],
+      "refclk": "clk1",
+      "common": "GTYE4_COMMON_X1Y12",
+      "bel": "IBUFDS1_GTYE4",
+      "pins": {
+        "ref_p": "F11",
+        "ref_n": "F10",
+        "rx_p": ["J4", "H2", "G4", "F2"],
+        "rx_n": ["J3", "H1", "G3", "F1"],
+        "tx_p": ["J9", "H7", "G9", "F7"],
+        "tx_n": ["J8", "H6", "G8", "F6"]
+      }
+    },
+    {
+      "number": 229,
+      "port": "QSFP2",
+      "channels": ["X1Y36", "X1Y37", "X1Y38", "X1Y39"],
+      "refclk": "clk1",
+      "common": "GTYE4_COMMON_X1Y9",
+      "bel": "IBUFDS1_GTYE4",
+      "pins": {
+        "ref_p": "V11",
+        "ref_n": "V10",
+        "rx_p": ["AA4", "Y2", "W4", "V2"],
+        "rx_n": ["AA3", "Y1", "W3", "V1"],
+        "tx_p": ["AA9", "Y7", "W9", "V7"],
+        "tx_n": ["AA8", "Y6", "W8", "V6"]
+      }
+    },
+    {
+      "number": 228,
+      "port": "QSFP3",
+      "channels": ["X1Y32", "X1Y33", "X1Y34", "X1Y35"],
+      "refclk": "clk1",
+      "common": "GTYE4_COMMON_X1Y8",
+      "bel": "IBUFDS1_GTYE4",
+      "pins": {
+        "ref_p": "AB11",
+        "ref_n": "AB10",
+        "rx_p": ["AE4", "AD2", "AC4", "AB2"],
+        "rx_n": ["AE3", "AD1", "AC3", "AB1"],
+        "tx_p": ["AE9", "AD7", "AC9", "AB7"],
+        "tx_n": ["AE8", "AD6", "AC8", "AB6"]
+      }
+    },
+    {
+      "number": 129,
+      "port": "SlimSAS1",
+      "channels": ["X0Y36", "X0Y37", "X0Y38", "X0Y39"],
+      "refclk": "clk0",
+      "common": "GTYE4_COMMON_X0Y9",
+      "bel": "IBUFDS0_GTYE4",
+      "pins": {
+        "ref_p": "AA36",
+        "ref_n": "AA37",
+        "rx_p": ["AA45", "Y43", "W45", "V43"],
+        "rx_n": ["AA46", "Y44", "W46", "V44"],
+        "tx_p": ["AA40", "Y38", "W40", "V38"],
+        "tx_n": ["AA41", "Y39", "W41", "V39"]
+      }
+    },
+    {
+      "number": 133,
+      "port": "SlimSAS1",
+      "channels": ["X0Y52", "X0Y53", "X0Y54", "X0Y55"],
+      "refclk": "clk0",
+      "common": "GTYE4_COMMON_X0Y13",
+      "bel": "IBUFDS0_GTYE4",
+      "pins": {
+        "ref_p": "R36",
+        "ref_n": "R37",
+        "rx_p": ["J45", "H43", "F45", "D45"],
+        "rx_n": ["J46", "H44", "F46", "D46"],
+        "tx_p": ["G40", "E42", "C42", "A42"],
+        "tx_n": ["G41", "E43", "C43", "A43"]
+      }
+    },
+    {
+      "number": 120,
+      "port": "SlimSAS2",
+      "channels": ["X0Y0", "X0Y1", "X0Y2", "X0Y3"],
+      "refclk": "clk0",
+      "common": "GTYE4_COMMON_X0Y0",
+      "bel": "IBUFDS0_GTYE4",
+      "pins": {
+        "ref_p": "AL36",
+        "ref_n": "AL37",
+        "rx_p": ["BC45", "BA45", "AW45", "AV43"],
+        "rx_n": ["BC46", "BA46", "AW46", "AV44"],
+        "tx_p": ["BD42", "BB42", "AY42", "AW40"],
+        "tx_n": ["BD43", "BB43", "AY43", "AW41"]
+      }
+    },
+    {
+      "number": 121,
+      "port": "SlimSAS2",
+      "channels": ["X0Y4", "X0Y5", "X0Y6", "X0Y7"],
+      "refclk": "clk0",
+      "common": "GTYE4_COMMON_X0Y1",
+      "bel": "IBUFDS0_GTYE4",
+      "pins": {
+        "ref_p": "AJ36",
+        "ref_n": "AJ37",
+        "rx_p": ["AU45", "AT43", "AR45", "AP43"],
+        "rx_n": ["AU46", "AT44", "AR46", "AP44"],
+        "tx_p": ["AU40", "AT38", "AR40", "AP38"],
+        "tx_n": ["AU41", "AT39", "AR41", "AP39"]
+      }
+    }
+  ]
+}

@@ -3,4 +3,4 @@ __pycache__/
 *.bit
 *.jou
 *.log
-build/
+build*

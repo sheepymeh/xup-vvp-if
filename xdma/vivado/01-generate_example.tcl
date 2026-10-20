@@ -1,6 +1,7 @@
 set root [file join [file dirname [info script]] ..]
 set build [file join $root build]
-set_part xcvu13p-figd2104-2-e
+source [file join $root .. common board.tcl]
+set_part $::board::part
 
 create_ip \
     -name xdma \

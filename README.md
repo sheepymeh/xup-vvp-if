@@ -2,6 +2,21 @@
 
 Reverse-engineered interfaces for the BittWare XUP-VVP/CVP-13.
 
+## Hardware tests
+
+Build, program and run each test independently using its own scripts:
+
+| Test | Instructions |
+| --- | --- |
+| PCIe XDMA | [xdma/README.md](xdma/README.md) |
+| UDIMM DDR4 | [ddr4/README.md](ddr4/README.md) |
+| GTY PRBS loopback | [gty_loopback/README.md](gty_loopback/README.md) |
+
+The tests share [build, JTAG, probe and RTL helpers](common/README.md).
+Builds check routing and setup/hold timing before emitting bitstreams.
+Memory read/write and external GTY tests require populated DIMMs and suitable
+loopback fixtures respectively.
+
 ## Board Overview
 
 The XUP-VVP has a `xcvu13p-figd2104-2-e` and is identical to the mining-focused CVP-13.
@@ -73,8 +88,8 @@ All GTY reference pairs used `IBUFDS_GTE4`. Their receivers have fixed internal 
 | --- | --- | --- | --- |
 | DIMM0 DDR CK_t/CK_c | | `AV18`/`AW18` | CVP-13 XDC |
 | DIMM1 DDR CK_t/CK_c | | `AV33`/`AW33` | CVP-13 XDC |
-| DIMM0 RESET_n | `BB14` | | CVP-13 XDC |
-| DIMM1 RESET_n | `BC31` | | CVP-13 XDC |
+| DIMM0 RESET_n | | `BB14` | CVP-13 XDC |
+| DIMM1 RESET_n | | `BC31` | CVP-13 XDC |
 | PCIe REFCLK0 candidate 1 | GTY225 | `AT11`/`AT10` | 100 MHz, works with XDMA |
 | PCIe REFCLK0 candidate 2 | GTY227 | `AH11`/`AH10` | 100 MHz, works with XDMA |
 | PCIe PERST# | FPGA control | `AP26` | Works with XDMA |

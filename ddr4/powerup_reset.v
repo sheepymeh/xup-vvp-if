@@ -4,7 +4,8 @@ module powerup_reset (
        X_INTERFACE_PARAMETER = "POLARITY ACTIVE_HIGH" *)
     output wire sys_rst,
     (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 monitor_clk CLK" *)
-    output wire monitor_clk
+    output wire monitor_clk,
+    output wire [3:0] startup_status
 );
     wire cfgmclk;
     wire eos;
@@ -49,4 +50,5 @@ module powerup_reset (
 
     // Registered output avoids a combinational path into controller reset
     assign sys_rst = sys_rst_q;
+    assign startup_status = {sys_rst_q, dci_reset, locked_sync[1], eos_sync};
 endmodule
