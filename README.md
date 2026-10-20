@@ -9,7 +9,7 @@ The XUP-VVP has a `xcvu13p-figd2104-2-e` and is identical to the mining-focused 
 USB Devices
 * BittWare `2528:0004`
 * Digilent/FT232H `0403:6014`
-* hub `04b4:6570`
+* USB hub `04b4:6570`
 * FT232R serial device `0403:6001`
 
 ## Flashing
@@ -19,8 +19,10 @@ A flash chip is present on the board with user/backup sections, and can be progr
 
 ## Programmable Clocks
 
-Two Si5341-A grade Rev D programmable clocks with part id `41 53`, revision `00 03` are available on the card.
+Two [Si5341-A grade Rev D](https://www.skyworksinc.com/-/media/Skyworks/SL/documents/public/reference-manuals/Si5341-40-D-RM.pdf) programmable clocks with part id `41 53`, revision `00 03` are available on the card.
 Clock A is index `0` at BMC endpoint `0x0E8`, clock B is index `1` at endpoint `0x0EA`.
+
+Both generators have normal differential LVDS driver settings on all outputs: `FORMAT=1`, `CM=3`, `AMPL=3`, `VDD_SEL_EN=1`, `VDD_SEL=0`.
 
 <details><summary><strong>Verified Clock Pins</strong></summary>
 
@@ -42,19 +44,21 @@ by halving the clock rate via I2C, then measuring on the FPGA.
 * A5/A7 are suspected SlimSAS Tx clocks per XUP-VV4 HRG, but changing clocks did not cause the expected response
 * A9 is suspected IN0 cascade to clock B, but changing clocks did not cause the expected response
 
-| Clock Output | FPGA destination | Input | +pin | -pin | Remarks |
-| --- | --- | --- | --- | --- | --- |
-| **B OUT1** | Bank 70 | Clock input | `G30` | `F30` | |
-| **B OUT2** | Bank 73 | Clock input | `G20` | `F19` | |
-| **B OUT3** | Bank 66 | Clock input | `AY18` | `AY17` | DIMM0 source clock |
-| **B OUT4** | Bank 62 | Clock input | `BB31` | `BB32` | DIMM1 source clock |
-| **B OUT5** | Bank 64 | Clock input | `AV22` | `AV21` | |
-| **B OUT6** | GTY233 | REFCLK1 | `B11` | `B10` | |
-| **B OUT7** | GTY232 | REFCLK1 | `F11` | `F10` | |
-| **B OUT8** | GTY229 | REFCLK1 | `V11` | `V10` | |
-| **B OUT9** | GTY228 | REFCLK1 | `AB11` | `AB10` | |
+| Clock Output | FPGA destination | Input | +pin | -pin | Remarks | VCCO | Tested configuration |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **B OUT1** | Bank 70 | Clock input | `G30` | `F30` | | 1.2 V | LVDS without internal termination, DIFF_SSTL12 with `RTT_NONE` or `RTT_48` |
+| **B OUT2** | Bank 73 | Clock input | `G20` | `F19` | | 1.2 V | LVDS without internal termination, DIFF_SSTL12 with `RTT_NONE` or `RTT_48` |
+| **B OUT3** | Bank 66 | Clock input | `AY18` | `AY17` | DIMM0 source clock | 1.2 V | LVDS without internal termination, DIFF_SSTL12 with `RTT_NONE` or `RTT_48` |
+| **B OUT4** | Bank 62 | Clock input | `BB31` | `BB32` | DIMM1 source clock | 1.2 V | LVDS without internal termination, DIFF_SSTL12 with `RTT_NONE` or `RTT_48` |
+| **B OUT5** | Bank 64 | Clock input | `AV22` | `AV21` | | 1.8 V | LVDS with `TERM_NONE` or `TERM_100` |
+| **B OUT6** | GTY233 | REFCLK1 | `B11` | `B10` | | | |
+| **B OUT7** | GTY232 | REFCLK1 | `F11` | `F10` | | | |
+| **B OUT8** | GTY229 | REFCLK1 | `V11` | `V10` | | | |
+| **B OUT9** | GTY228 | REFCLK1 | `AB11` | `AB10` | | | |
 
 * B0 is suspected GTY225/227 PCIe-refclk, but changing clocks did not cause the expected response
+
+All GTY reference pairs used `IBUFDS_GTE4`. Their receivers have fixed internal 50 ohm termination on each leg to MGTAVCC, documented in [AMD UG578](https://docs.amd.com/v/u/en-US/ug578-ultrascale-gty-transceivers). MGTAVCC is [nominally 0.9 V](https://docs.amd.com/r/en-US/ds923-virtex-ultrascale-plus/Recommended-Operating-Conditions) but was not measured.
 
 </details>
 
@@ -64,8 +68,6 @@ by halving the clock rate via I2C, then measuring on the FPGA.
 * Use `--hexval=0xNN` instead of bare `--hexval=NN`
 
 ## Pinout
-
-<details><summary><strong>Pinout</strong></summary>
 
 | Function | FPGA destination | FPGA pin(s) | Evidence source |
 | --- | --- | --- | --- |
@@ -81,8 +83,6 @@ by halving the clock rate via I2C, then measuring on the FPGA.
 | QSFP management SDA/SCL | | `AN19`/`AP19` | XUP-VV4 HRG |
 | FPGA-to-BMC UART | | Unresolved | XUP-VV4 HRG |
 | I2C bus arbitration | | Not established | XUP-VV4 HRG |
-
-</details>
 
 ## Comparison with XUP-VV4
 

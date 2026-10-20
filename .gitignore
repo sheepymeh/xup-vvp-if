@@ -1,3 +1,6 @@
+__pycache__/
 .Xil/
 *.bit
-__pycache__/
+*.jou
+*.log
+build/

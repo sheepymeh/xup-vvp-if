@@ -1,0 +1,210 @@
+# GTY233: QSFP0, channels X1Y52-X1Y55, REFCLK1
+set_property PACKAGE_PIN B11 [get_ports q233_ref_p]
+set_property PACKAGE_PIN B10 [get_ports q233_ref_n]
+
+set_property PACKAGE_PIN E4 [get_ports {q233_rx_p[0]}]
+set_property PACKAGE_PIN D2 [get_ports {q233_rx_p[1]}]
+set_property PACKAGE_PIN C4 [get_ports {q233_rx_p[2]}]
+set_property PACKAGE_PIN A5 [get_ports {q233_rx_p[3]}]
+set_property PACKAGE_PIN E3 [get_ports {q233_rx_n[0]}]
+set_property PACKAGE_PIN D1 [get_ports {q233_rx_n[1]}]
+set_property PACKAGE_PIN C3 [get_ports {q233_rx_n[2]}]
+set_property PACKAGE_PIN A4 [get_ports {q233_rx_n[3]}]
+
+set_property PACKAGE_PIN E9 [get_ports {q233_tx_p[0]}]
+set_property PACKAGE_PIN D7 [get_ports {q233_tx_p[1]}]
+set_property PACKAGE_PIN C9 [get_ports {q233_tx_p[2]}]
+set_property PACKAGE_PIN A9 [get_ports {q233_tx_p[3]}]
+set_property PACKAGE_PIN E8 [get_ports {q233_tx_n[0]}]
+set_property PACKAGE_PIN D6 [get_ports {q233_tx_n[1]}]
+set_property PACKAGE_PIN C8 [get_ports {q233_tx_n[2]}]
+set_property PACKAGE_PIN A8 [get_ports {q233_tx_n[3]}]
+
+create_clock -name q233_ref -period 3.103030303 [get_ports q233_ref_p]
+set_property LOC GTYE4_COMMON_X1Y13 [get_cells q233_refbuf]
+set_property BEL IBUFDS1_GTYE4 [get_cells q233_refbuf]
+
+# GTY232: QSFP1, channels X1Y48-X1Y51, REFCLK1
+set_property PACKAGE_PIN F11 [get_ports q232_ref_p]
+set_property PACKAGE_PIN F10 [get_ports q232_ref_n]
+
+set_property PACKAGE_PIN J4 [get_ports {q232_rx_p[0]}]
+set_property PACKAGE_PIN H2 [get_ports {q232_rx_p[1]}]
+set_property PACKAGE_PIN G4 [get_ports {q232_rx_p[2]}]
+set_property PACKAGE_PIN F2 [get_ports {q232_rx_p[3]}]
+set_property PACKAGE_PIN J3 [get_ports {q232_rx_n[0]}]
+set_property PACKAGE_PIN H1 [get_ports {q232_rx_n[1]}]
+set_property PACKAGE_PIN G3 [get_ports {q232_rx_n[2]}]
+set_property PACKAGE_PIN F1 [get_ports {q232_rx_n[3]}]
+
+set_property PACKAGE_PIN J9 [get_ports {q232_tx_p[0]}]
+set_property PACKAGE_PIN H7 [get_ports {q232_tx_p[1]}]
+set_property PACKAGE_PIN G9 [get_ports {q232_tx_p[2]}]
+set_property PACKAGE_PIN F7 [get_ports {q232_tx_p[3]}]
+set_property PACKAGE_PIN J8 [get_ports {q232_tx_n[0]}]
+set_property PACKAGE_PIN H6 [get_ports {q232_tx_n[1]}]
+set_property PACKAGE_PIN G8 [get_ports {q232_tx_n[2]}]
+set_property PACKAGE_PIN F6 [get_ports {q232_tx_n[3]}]
+
+create_clock -name q232_ref -period 3.103030303 [get_ports q232_ref_p]
+set_property LOC GTYE4_COMMON_X1Y12 [get_cells q232_refbuf]
+set_property BEL IBUFDS1_GTYE4 [get_cells q232_refbuf]
+
+# GTY229: QSFP2, channels X1Y36-X1Y39, REFCLK1
+set_property PACKAGE_PIN V11 [get_ports q229_ref_p]
+set_property PACKAGE_PIN V10 [get_ports q229_ref_n]
+
+set_property PACKAGE_PIN AA4 [get_ports {q229_rx_p[0]}]
+set_property PACKAGE_PIN Y2 [get_ports {q229_rx_p[1]}]
+set_property PACKAGE_PIN W4 [get_ports {q229_rx_p[2]}]
+set_property PACKAGE_PIN V2 [get_ports {q229_rx_p[3]}]
+set_property PACKAGE_PIN AA3 [get_ports {q229_rx_n[0]}]
+set_property PACKAGE_PIN Y1 [get_ports {q229_rx_n[1]}]
+set_property PACKAGE_PIN W3 [get_ports {q229_rx_n[2]}]
+set_property PACKAGE_PIN V1 [get_ports {q229_rx_n[3]}]
+
+set_property PACKAGE_PIN AA9 [get_ports {q229_tx_p[0]}]
+set_property PACKAGE_PIN Y7 [get_ports {q229_tx_p[1]}]
+set_property PACKAGE_PIN W9 [get_ports {q229_tx_p[2]}]
+set_property PACKAGE_PIN V7 [get_ports {q229_tx_p[3]}]
+set_property PACKAGE_PIN AA8 [get_ports {q229_tx_n[0]}]
+set_property PACKAGE_PIN Y6 [get_ports {q229_tx_n[1]}]
+set_property PACKAGE_PIN W8 [get_ports {q229_tx_n[2]}]
+set_property PACKAGE_PIN V6 [get_ports {q229_tx_n[3]}]
+
+create_clock -name q229_ref -period 3.103030303 [get_ports q229_ref_p]
+set_property LOC GTYE4_COMMON_X1Y9 [get_cells q229_refbuf]
+set_property BEL IBUFDS1_GTYE4 [get_cells q229_refbuf]
+
+# GTY228: QSFP3, channels X1Y32-X1Y35, REFCLK1
+set_property PACKAGE_PIN AB11 [get_ports q228_ref_p]
+set_property PACKAGE_PIN AB10 [get_ports q228_ref_n]
+
+set_property PACKAGE_PIN AE4 [get_ports {q228_rx_p[0]}]
+set_property PACKAGE_PIN AD2 [get_ports {q228_rx_p[1]}]
+set_property PACKAGE_PIN AC4 [get_ports {q228_rx_p[2]}]
+set_property PACKAGE_PIN AB2 [get_ports {q228_rx_p[3]}]
+set_property PACKAGE_PIN AE3 [get_ports {q228_rx_n[0]}]
+set_property PACKAGE_PIN AD1 [get_ports {q228_rx_n[1]}]
+set_property PACKAGE_PIN AC3 [get_ports {q228_rx_n[2]}]
+set_property PACKAGE_PIN AB1 [get_ports {q228_rx_n[3]}]
+
+set_property PACKAGE_PIN AE9 [get_ports {q228_tx_p[0]}]
+set_property PACKAGE_PIN AD7 [get_ports {q228_tx_p[1]}]
+set_property PACKAGE_PIN AC9 [get_ports {q228_tx_p[2]}]
+set_property PACKAGE_PIN AB7 [get_ports {q228_tx_p[3]}]
+set_property PACKAGE_PIN AE8 [get_ports {q228_tx_n[0]}]
+set_property PACKAGE_PIN AD6 [get_ports {q228_tx_n[1]}]
+set_property PACKAGE_PIN AC8 [get_ports {q228_tx_n[2]}]
+set_property PACKAGE_PIN AB6 [get_ports {q228_tx_n[3]}]
+
+create_clock -name q228_ref -period 3.103030303 [get_ports q228_ref_p]
+set_property LOC GTYE4_COMMON_X1Y8 [get_cells q228_refbuf]
+set_property BEL IBUFDS1_GTYE4 [get_cells q228_refbuf]
+
+# GTY129: SlimSAS1 lanes 0-3, channels X0Y36-X0Y39, REFCLK0
+set_property PACKAGE_PIN AA36 [get_ports q129_ref_p]
+set_property PACKAGE_PIN AA37 [get_ports q129_ref_n]
+
+set_property PACKAGE_PIN AA45 [get_ports {q129_rx_p[0]}]
+set_property PACKAGE_PIN Y43 [get_ports {q129_rx_p[1]}]
+set_property PACKAGE_PIN W45 [get_ports {q129_rx_p[2]}]
+set_property PACKAGE_PIN V43 [get_ports {q129_rx_p[3]}]
+set_property PACKAGE_PIN AA46 [get_ports {q129_rx_n[0]}]
+set_property PACKAGE_PIN Y44 [get_ports {q129_rx_n[1]}]
+set_property PACKAGE_PIN W46 [get_ports {q129_rx_n[2]}]
+set_property PACKAGE_PIN V44 [get_ports {q129_rx_n[3]}]
+
+set_property PACKAGE_PIN AA40 [get_ports {q129_tx_p[0]}]
+set_property PACKAGE_PIN Y38 [get_ports {q129_tx_p[1]}]
+set_property PACKAGE_PIN W40 [get_ports {q129_tx_p[2]}]
+set_property PACKAGE_PIN V38 [get_ports {q129_tx_p[3]}]
+set_property PACKAGE_PIN AA41 [get_ports {q129_tx_n[0]}]
+set_property PACKAGE_PIN Y39 [get_ports {q129_tx_n[1]}]
+set_property PACKAGE_PIN W41 [get_ports {q129_tx_n[2]}]
+set_property PACKAGE_PIN V39 [get_ports {q129_tx_n[3]}]
+
+create_clock -name q129_ref -period 3.103030303 [get_ports q129_ref_p]
+set_property LOC GTYE4_COMMON_X0Y9 [get_cells q129_refbuf]
+set_property BEL IBUFDS0_GTYE4 [get_cells q129_refbuf]
+
+# GTY133: SlimSAS1 lanes 4-7, channels X0Y52-X0Y55, REFCLK0
+set_property PACKAGE_PIN R36 [get_ports q133_ref_p]
+set_property PACKAGE_PIN R37 [get_ports q133_ref_n]
+
+set_property PACKAGE_PIN J45 [get_ports {q133_rx_p[0]}]
+set_property PACKAGE_PIN H43 [get_ports {q133_rx_p[1]}]
+set_property PACKAGE_PIN F45 [get_ports {q133_rx_p[2]}]
+set_property PACKAGE_PIN D45 [get_ports {q133_rx_p[3]}]
+set_property PACKAGE_PIN J46 [get_ports {q133_rx_n[0]}]
+set_property PACKAGE_PIN H44 [get_ports {q133_rx_n[1]}]
+set_property PACKAGE_PIN F46 [get_ports {q133_rx_n[2]}]
+set_property PACKAGE_PIN D46 [get_ports {q133_rx_n[3]}]
+
+set_property PACKAGE_PIN G40 [get_ports {q133_tx_p[0]}]
+set_property PACKAGE_PIN E42 [get_ports {q133_tx_p[1]}]
+set_property PACKAGE_PIN C42 [get_ports {q133_tx_p[2]}]
+set_property PACKAGE_PIN A42 [get_ports {q133_tx_p[3]}]
+set_property PACKAGE_PIN G41 [get_ports {q133_tx_n[0]}]
+set_property PACKAGE_PIN E43 [get_ports {q133_tx_n[1]}]
+set_property PACKAGE_PIN C43 [get_ports {q133_tx_n[2]}]
+set_property PACKAGE_PIN A43 [get_ports {q133_tx_n[3]}]
+
+create_clock -name q133_ref -period 3.103030303 [get_ports q133_ref_p]
+set_property LOC GTYE4_COMMON_X0Y13 [get_cells q133_refbuf]
+set_property BEL IBUFDS0_GTYE4 [get_cells q133_refbuf]
+
+# GTY120: SlimSAS2 lanes 0-3, channels X0Y0-X0Y3, REFCLK0
+set_property PACKAGE_PIN AL36 [get_ports q120_ref_p]
+set_property PACKAGE_PIN AL37 [get_ports q120_ref_n]
+
+set_property PACKAGE_PIN BC45 [get_ports {q120_rx_p[0]}]
+set_property PACKAGE_PIN BA45 [get_ports {q120_rx_p[1]}]
+set_property PACKAGE_PIN AW45 [get_ports {q120_rx_p[2]}]
+set_property PACKAGE_PIN AV43 [get_ports {q120_rx_p[3]}]
+set_property PACKAGE_PIN BC46 [get_ports {q120_rx_n[0]}]
+set_property PACKAGE_PIN BA46 [get_ports {q120_rx_n[1]}]
+set_property PACKAGE_PIN AW46 [get_ports {q120_rx_n[2]}]
+set_property PACKAGE_PIN AV44 [get_ports {q120_rx_n[3]}]
+
+set_property PACKAGE_PIN BD42 [get_ports {q120_tx_p[0]}]
+set_property PACKAGE_PIN BB42 [get_ports {q120_tx_p[1]}]
+set_property PACKAGE_PIN AY42 [get_ports {q120_tx_p[2]}]
+set_property PACKAGE_PIN AW40 [get_ports {q120_tx_p[3]}]
+set_property PACKAGE_PIN BD43 [get_ports {q120_tx_n[0]}]
+set_property PACKAGE_PIN BB43 [get_ports {q120_tx_n[1]}]
+set_property PACKAGE_PIN AY43 [get_ports {q120_tx_n[2]}]
+set_property PACKAGE_PIN AW41 [get_ports {q120_tx_n[3]}]
+
+create_clock -name q120_ref -period 3.103030303 [get_ports q120_ref_p]
+set_property LOC GTYE4_COMMON_X0Y0 [get_cells q120_refbuf]
+set_property BEL IBUFDS0_GTYE4 [get_cells q120_refbuf]
+
+# GTY121: SlimSAS2 lanes 4-7, channels X0Y4-X0Y7, REFCLK0
+set_property PACKAGE_PIN AJ36 [get_ports q121_ref_p]
+set_property PACKAGE_PIN AJ37 [get_ports q121_ref_n]
+
+set_property PACKAGE_PIN AU45 [get_ports {q121_rx_p[0]}]
+set_property PACKAGE_PIN AT43 [get_ports {q121_rx_p[1]}]
+set_property PACKAGE_PIN AR45 [get_ports {q121_rx_p[2]}]
+set_property PACKAGE_PIN AP43 [get_ports {q121_rx_p[3]}]
+set_property PACKAGE_PIN AU46 [get_ports {q121_rx_n[0]}]
+set_property PACKAGE_PIN AT44 [get_ports {q121_rx_n[1]}]
+set_property PACKAGE_PIN AR46 [get_ports {q121_rx_n[2]}]
+set_property PACKAGE_PIN AP44 [get_ports {q121_rx_n[3]}]
+
+set_property PACKAGE_PIN AU40 [get_ports {q121_tx_p[0]}]
+set_property PACKAGE_PIN AT38 [get_ports {q121_tx_p[1]}]
+set_property PACKAGE_PIN AR40 [get_ports {q121_tx_p[2]}]
+set_property PACKAGE_PIN AP38 [get_ports {q121_tx_p[3]}]
+set_property PACKAGE_PIN AU41 [get_ports {q121_tx_n[0]}]
+set_property PACKAGE_PIN AT39 [get_ports {q121_tx_n[1]}]
+set_property PACKAGE_PIN AR41 [get_ports {q121_tx_n[2]}]
+set_property PACKAGE_PIN AP39 [get_ports {q121_tx_n[3]}]
+
+create_clock -name q121_ref -period 3.103030303 [get_ports q121_ref_p]
+set_property LOC GTYE4_COMMON_X0Y1 [get_cells q121_refbuf]
+set_property BEL IBUFDS0_GTYE4 [get_cells q121_refbuf]
+
+# CDC exceptions, later synchronizer stages remain timed
+set_false_path -to [get_pins -hier -filter {NAME =~ */sync_first_reg*/D}]
