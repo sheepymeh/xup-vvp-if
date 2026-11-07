@@ -13,7 +13,6 @@ vivado -mode batch -nojournal -log build.log -source build.tcl
 `prepare.sh` downloads GPLv2+ upstream constraints:
 * [DIMM0](https://raw.githubusercontent.com/d953i/Custom_Part_Data_Files/b8b941d66658f0c44013fb03469ec142d24db5c9/Boards/Bittware_CVP13/CVP13_DIMM0.xdc),
 * [DIMM1](https://raw.githubusercontent.com/d953i/Custom_Part_Data_Files/b8b941d66658f0c44013fb03469ec142d24db5c9/Boards/Bittware_CVP13/CVP13_DIMM1.xdc).
-Edit constraint preparation in that script, it regenerates `build/constraints/dimm*.xdc`.
 
 Routing and setup/hold timing must pass before `build/ddr4_test.bit`
 and `build/ddr4_test.ltx` are written. Reports are in `build/reports/`, and
